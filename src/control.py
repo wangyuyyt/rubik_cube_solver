@@ -50,13 +50,12 @@ class RubicControler:
             move = random.choice(all_moves)
             self.turn(move)
             moves.append(move)
-            time.sleep(0.5)
         return moves
 
     def write_gcode(self, gcode):
         #print(bytes(gcode + '\n', 'UTF-8'))
         self.ser.write(bytes(gcode + '\n', 'UTF-8'))
-        time.sleep(0.5)
+        time.sleep(0.1)
 
 def main():
     default_side_to_color = {'U': 'O', 'R': 'B', 'F': 'W', 'D': 'R', 'L': 'G', 'B': 'Y'}

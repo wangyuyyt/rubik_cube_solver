@@ -33,8 +33,12 @@ class CubeStatus:
     def __init__(self):
         # rectangles represented by x, y, width and height
         self.polygons = {
-            "U1":  (887.9120879120879, 247.9120879120879,59.78021978021978,33.40659340659341),
-            "U2": (1025.054945054945,274.2857142857143,45.714285714285715,36.92307692307692), "U3": (1169.2307692307693,312.96703296703294,52.747252747252745,36.92307692307692), "U4":(764.8351648351648,283.0769230769231,61.53846153846154,35.16483516483517), "U5":(907.2527472527472,327.032967032967,58.02197802197802,36.92307692307692), "U6":(1053.1868131868132,370.989010989011,65.05494505494505,42.1978021978022), "U7":(606.5934065934066,339.34065934065933,56.26373626373626,42.1978021978022), "U8":(743.7362637362637,381.53846153846155,59.78021978021978,42.1978021978022), "U9":(903.7362637362637,434.2857142857143,70.32967032967034,49.230769230769226), "L1":(546.8131868131868,436.04395604395603,49.230769230769226,47.472527472527474), "L2":(669.8901098901099,501.0989010989011,50.989010989010985,59.78021978021978), "L3":(800,564.3956043956044,56.26373626373626,59.78021978021978), "L4":(594.2857142857142,606.5934065934066,45.714285714285715,50.989010989010985), "L5":(699.7802197802198,678.6813186813187,45.714285714285715,58.02197802197802), "L6":(826.3736263736264,764.8351648351648,49.230769230769226,59.78021978021978), "L7":(618.9010989010989,743.7362637362637,38.68131868131868,45.714285714285715), "L8":(719.1208791208791,821.0989010989011,42.1978021978022,50.989010989010985), "L9":(831.6483516483516,912.5274725274725,47.472527472527474,52.747252747252745), "R1":(995.1648351648352,587.2527472527472,49.230769230769226,59.78021978021978), "R2":(1146.3736263736264,501.0989010989011,50.989010989010985,61.53846153846154), "R3":(1269.4505494505495,420.2197802197802,43.956043956043956,58.02197802197802), "R4":(986.3736263736264,782.4175824175824,50.989010989010985,58.02197802197802), "R5":(1141.098901098901,685.7142857142857,42.1978021978022,52.747252747252745), "R6":(1243.076923076923,589.0109890109891,42.1978021978022,50.989010989010985), "R7":(991.6483516483516,938.9010989010989,43.956043956043956,52.747252747252745), "R8":(1123.5164835164835,822.8571428571429,42.1978021978022,47.472527472527474), "R9":(1221.978021978022,734.945054945055,40.43956043956044,45.714285714285715)
+            "U1":  (888, 248,60,33), "U2": (1025,274,46,37), "U3": (1169,313,53, 37), "U4":(765,283,62,35),
+            "U5":(907,327,58,37), "U6":(1053,371,65,42), "U7":(607,339,56,42), "U8":(744,382,60,42), "U9":(904,434,70,49),
+            "L1":(547,436,49,47), "L2":(670,501,51,60), "L3":(800,564,56,60), "L4":(594,607,46,51),
+            "L5":(700,679,46,58), "L6":(826,765,49,60), "L7":(619,744,39,46), "L8":(719,821,42,51), "L9":(832,913,47,53),
+            "R1":(995,587,49,60), "R2":(1146,501,51,62), "R3":(1269,420,44,58), "R4":(986,782,51,58),
+            "R5":(1141,686,42,53), "R6":(1243,589,42,51), "R7":(992,939,44,53), "R8":(1124,823,42,47), "R9":(1222,735,40,46)
         }
 
         # Map labels in the first picture to final label in cube status.      
@@ -85,6 +89,11 @@ class CubeStatus:
         self.second_pic_taken = False
 
     def extract_regions(self, img_files, out_path, true_label_file):
+        """
+        Extract regions from images and store them as jpg in specified output path.
+        The true_label_file contains true labels for each region. The output file name is in format
+        ture_label.original_file_name-region.jpg.
+        """
         if not os.path.exists(out_path):
             os.makedirs(out_path)
 
@@ -101,8 +110,6 @@ class CubeStatus:
             idx = 0
             true_label = true_label_by_file[os.path.basename(img_path)]
             all_true_labels += true_label
-            print('true:', true_label)
-            predicted_label = ''
 
             for side in ['U', 'L', 'R']:
                 for num in range(1, 10):
@@ -118,6 +125,14 @@ class CubeStatus:
         print(count_per_true_label)
 
     def capture_pictures(self, repeat_times=1, output_path=''):
+        """
+        Capture pictures that will be used for color detection.
+        The optional input for repeate_times and output_path is for capturing pictures to
+        prepare training data. It will repeate repeat_times, each time two pictures and
+        store the pictures in the output_path if specified.
+        After the first picture, you need to flip the cube to show the other three sides
+        to take the second picture.
+        """
         print('Press space on the video window to take picture!')
         repeated = 0
         while True:
@@ -197,6 +212,9 @@ class CubeStatus:
         return output
 
     def convert_to_status_input(self, predicts, label_mapping):
+        """
+        Convert regions in one picture to regions in cube.
+        """
         label_to_color = {}
         for l in predicts:
           color = self.colors[predicts[l]]
@@ -205,6 +223,9 @@ class CubeStatus:
         return label_to_color
 
     def generate_status_str(self, label_to_color):
+        """
+        Generate status string for the whole cube.
+        """
         labels =  list(label_to_color.keys())
         side_to_color = {'U': label_to_color['U5'], 'F': label_to_color['F5'], 'R': label_to_color['R5'],
                          'L': label_to_color['L5'], 'B': label_to_color['B5'], 'D': label_to_color['D5']}
@@ -230,7 +251,7 @@ class CubeStatus:
             color = label_to_color[key]
             out_side = color_to_side[color]
             status_string += out_side
-        return (status_string, side_to_color, color_to_side)
+        return (status_string, side_to_color)
 
     def draw_stickers(self, img, stickers, offset, side_to_color):
         for idx, scolor in enumerate(stickers):
@@ -270,6 +291,9 @@ class CubeStatus:
         return img
 
     def display_and_validate_status(self, status_string, side_to_color):
+        """
+        Display status and validate count for each color, if invalid ask input to fix.
+        """
         print(side_to_color)
         # Build color_to_side
         color_to_side = {}
@@ -290,6 +314,7 @@ class CubeStatus:
           key = cv2.waitKey(10) & 0xff
 
           if has_none_9:
+            # Get input to fix colors
             sq, color = input('Enter square and color to fix in format side:color.\n').split(':')
             while not (sq[0] in self.side_order and int(sq[1]) in range(1, 10) and color in self.colors):
               sq, color = input('Invalid side or color, please input again.\n').split(':')
@@ -344,7 +369,7 @@ class CubeStatus:
         label_to_color.update(self.convert_to_status_input(first_pic_predicts, self.pic1_label_mapping))
 
         # Generate status string and diaplsy
-        (status_string, side_to_color, color_to_side) = self.generate_status_str(label_to_color)
+        (status_string, side_to_color) = self.generate_status_str(label_to_color)
         print(status_string)
         validated_status = self.display_and_validate_status(status_string, side_to_color)
         
@@ -405,13 +430,15 @@ def main():
     # detect status
     #cube_status.detect_status()
 
-    # Extract regions
+    # Extract regions and output training/testing data.
     #flist = glob.glob('/Users/wangyu/Pictures/v4-7/*.jpg')
     #cube_status.extract_regions(flist, '/Users/wangyu/Pictures/v4-7/extracted', '/Users/wangyu/Pictures/v4-7/labels')
     #split_training_testing('/Users/wangyu/Pictures/v4-7/extracted')
 
     # Show polygons
     #cube_status.show_polygons(os.path.join('/Users/wangyu/Downloads', '0-1.jpg'))
+
+    # Test change_status
     input_status = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB'
     while True:
       print('Current status: ' + input_status)

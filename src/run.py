@@ -14,7 +14,7 @@ def detect():
     global current_status, side_to_color
     current_status, side_to_color = cube.detect_status()
 
-def randomize():
+def scramble():
     global current_status, side_to_color
     num_moves = int(input("How many random moves you want to perform?\n"))
     moves = controler.random_move(num_moves)
@@ -37,8 +37,15 @@ def customized_moves():
         controler.turn(move)
     current_status = cube.change_status(current_status, moves)
 
+def test_motors():
+    print('Testing motors.')
+    moves = ["L", "L'", "R", "R'", "U", "U'", "B", "B'", "D", "D'", "F", "F'"]
+    for move in moves:
+        controler.turn(move)
+
 def main():
     global current_status, side_to_color
+
     while True:
         img = cube.display_status(list(current_status), side_to_color)
         cv2.imshow('Current Status', img)
@@ -48,18 +55,21 @@ def main():
 
         choice = input("Choose the action you would like to perform, enter to exit. If your cube is not solved, you should perform status detection first.\n"
                        "1. Detect status\n"
-                       "2. Randomize\n"
+                       "2. Scramble\n"
                        "3. Solve\n"
-                       "4. Perform specific moves\n")
+                       "4. Perform specific moves\n"
+                       "5. Test motors\n")
 
         if choice == '1':
             detect()
         elif choice == '2':
-            randomize()
+            scramble()
         elif choice == '3':
             solve()
         elif choice == '4':
             customized_moves()
+        elif choice == '5':
+            test_motors()
         elif choice == '':
             break
         else:
